@@ -1,3 +1,4 @@
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,13 +25,15 @@ spec:
 
     spec:
       serviceAccountName: backend-sa
+      automountServiceAccountToken: false
 
       containers:
         - name: backend
           image: sasmitajena/zomato_new:8c107d830729ae1b72da9a94d2b93d9255edbc31
 
           ports:
-            - containerPort: 3000
+            - name: http
+              containerPort: 80
 
           resources:
             requests:
@@ -39,3 +42,22 @@ spec:
             limits:
               cpu: "500m"
               memory: "1Gi"
+
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            failureThreshold: 30
+            periodSeconds: 5
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 5
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
